@@ -1,10 +1,7 @@
 package com.lgh.fitness.ad;
 
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -16,20 +13,15 @@ import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
-import com.lgh.fitness.MainActivity;
 
 import java.util.Map;
 
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
-import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
 
-public class SplashAdView implements PlatformView {
+/**
+ * 激励视频广告
+ */
+public class RewardVideoAdView implements PlatformView {
     private FrameLayout mSplashContainer;
     private TTAdNative mTTAdNative;
     //是否强制跳转到主页面
@@ -40,7 +32,7 @@ public class SplashAdView implements PlatformView {
     private String mCodeId = "887310160";
     private AdListener listener;
 
-    SplashAdView(Context context, AdListener listener, int id, Map<String, Object> params) {
+    RewardVideoAdView(Context context, AdListener listener, int id, Map<String, Object> params) {
 
         mSplashContainer = new FrameLayout(context);
         mTTAdNative = TTAdManagerHolder.get().createAdNative(context);

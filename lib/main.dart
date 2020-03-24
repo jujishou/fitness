@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,28 +25,49 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const plugin = const MethodChannel('fitness.flutter.io/splash');
+
   @override
   void initState() {
     super.initState();
 
-    _splash();
+    adFinish(this.context);
   }
 
-  Future<Null> _splash() async {
-    final platform = MethodChannel('fitness.flutter.io/adFinish');
+  static adFinish(BuildContext context) async {
     try {
-      final String result = await platform.invokeMethod('splash');
-      print(result);
+      await plugin.invokeMethod('splash');
+    } on PlatformException catch (e) {
+      debugPrint(e.toString());
+    }
 
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => SecPage()));
-    } on PlatformException catch (e) {}
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => SecPage()));
+  }
+
+  ///设置回退到手机桌面
+  static Future<bool> backDesktop() async {
+    try {
+      await plugin.invokeMethod('back');
+    } on PlatformException catch (e) {
+      debugPrint(e.toString());
+    }
+    return Future.value(false);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    return Center(
+      child: AndroidView(viewType: 'plugins.lgh.top/adview'),
+    );
+
     return WillPopScope(
-        onWillPop: AndroidBackTop.backDesktop, //页面将要消失时，调用原生的返回桌面方法
+        onWillPop: backDesktop, //页面将要消失时，调用原生的返回桌面方法
         child: Center(
           child: AndroidView(viewType: 'plugins.lgh.top/adview'),
         ));
@@ -54,9 +77,11 @@ class _HomePageState extends State<HomePage> {
 class SecPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Text('ssss'),
+    return Scaffold(
+      body: Container(
+        child: Center(
+          child: Text('ssss'),
+        ),
       ),
     );
   }
