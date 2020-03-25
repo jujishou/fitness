@@ -25,7 +25,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const plugin = const MethodChannel('fitness.flutter.io/splash');
+  static const plugin = const MethodChannel('fitness.flutter.io/ad');
 
   @override
   void initState() {
@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
 
   static adFinish(BuildContext context) async {
     try {
-      await plugin.invokeMethod('splash');
+      await plugin.invokeMethod('adFinish');
     } on PlatformException catch (e) {
       debugPrint(e.toString());
     }
@@ -62,9 +62,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-//      child: AndroidView(viewType: 'plugins.lgh.top/adview'),
-      child: AndroidView(viewType: 'plugins.lgh.top/reward_video'),
+    return Container(
+      child: AndroidView(viewType: 'plugins.lgh.top/splash_ad'), //开屏
     );
 
     return WillPopScope(
@@ -79,10 +78,87 @@ class SecPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        child: Center(
-          child: Text('ssss'),
+      appBar: AppBar(),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            FlatButton(
+              color: Colors.blue,
+              child: Text(
+                '播放激励视频',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+              onPressed: () {
+                _toRewardVideoPage(context);
+              },
+            ),
+            FlatButton(
+                color: Colors.blue,
+                child: Text(
+                  '打开插屏广告',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+                onPressed: () {
+                  _toExpressAdPagePage(context);
+                }),
+            FlatButton(
+                color: Colors.blue,
+                child: Text(
+                  '打开原生Banner',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+                onPressed: () {
+                  _toListAdPage(context);
+                }),
+          ],
         ),
+      ),
+    );
+  }
+
+  void _toRewardVideoPage(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => RewardVideoPage()));
+  }
+
+  void _toExpressAdPagePage(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => ExpressAdPage()));
+  }
+
+  void _toListAdPage(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => NativeAdPage()));
+  }
+}
+
+class RewardVideoPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: AndroidView(viewType: 'plugins.lgh.top/reward_video'),
+    );
+  }
+}
+
+class ExpressAdPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(
+        child: AndroidView(viewType: 'plugins.lgh.top/express_ad'),
+      ),
+    );
+  }
+}
+
+class NativeAdPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('固定广告'),),
+      body: Center(
+        child: AndroidView(viewType: 'plugins.lgh.top/native_ad'),
       ),
     );
   }

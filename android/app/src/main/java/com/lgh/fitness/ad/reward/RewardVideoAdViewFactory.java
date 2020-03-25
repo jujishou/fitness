@@ -1,28 +1,29 @@
-package com.lgh.fitness.ad;
+package com.lgh.fitness.ad.reward;
 
+import android.app.Activity;
 import android.content.Context;
+
+import com.lgh.fitness.ad.AdListener;
 
 import java.util.Map;
 
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
-import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.plugin.platform.PlatformView;
 import io.flutter.plugin.platform.PlatformViewFactory;
 
-public class SplashAdViewFactory extends PlatformViewFactory {
+public class RewardVideoAdViewFactory extends PlatformViewFactory {
     private final AdListener listener;
+    private Activity activity;
 
-    public SplashAdViewFactory(AdListener listener) {
+    public RewardVideoAdViewFactory(AdListener listener,Activity activity) {
         super(StandardMessageCodec.INSTANCE);
         this.listener = listener;
+        this.activity=activity;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public PlatformView create(Context context, int id, Object args) {
-        Map<String, Object> params = (Map<String, Object>) args;
-        return new SplashAdView(context, listener, id, params);
+        return new RewardVideoAdView(context, listener,activity);
     }
 }

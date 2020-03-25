@@ -1,4 +1,4 @@
-package com.lgh.fitness.ad;
+package com.lgh.fitness.ad.reward;
 
 
 import android.app.Activity;
@@ -17,6 +17,8 @@ import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
+import com.lgh.fitness.ad.AdListener;
+import com.lgh.fitness.ad.TTAdManagerHolder;
 
 import java.util.Map;
 
@@ -29,15 +31,13 @@ public class RewardVideoAdView implements PlatformView {
     private FrameLayout mSplashContainer;
     private TTAdNative mTTAdNative;
     //是否强制跳转到主页面
-    private static final String TAG = "SplashAdView";
+    private static final String TAG = "RewardVideoAdView";
 
-    //开屏广告加载超时时间,建议大于3000,这里为了冷启动第一次加载到广告并且展示,示例设置了3000ms
-    private static final int AD_TIME_OUT = 3000;
     private String mCodeId = "945107791";
     private AdListener listener;
     private TTRewardVideoAd mttRewardVideoAd;
 
-    RewardVideoAdView(Context context, AdListener listener, int id, Map<String, Object> params) {
+    RewardVideoAdView(Context context, AdListener listener, Activity activity) {
 
         mSplashContainer = new FrameLayout(context);
         mTTAdNative = TTAdManagerHolder.get().createAdNative(context);
@@ -45,13 +45,13 @@ public class RewardVideoAdView implements PlatformView {
 
         TTAdManager ttAdManager = TTAdManagerHolder.get();
         //step2:(可选，强烈建议在合适的时机调用):申请部分权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题。
-        TTAdManagerHolder.get().requestPermissionIfNecessary(context);
+//        TTAdManagerHolder.get().requestPermissionIfNecessary(context);
         //step3:创建TTAdNative对象,用于调用广告请求接口
         mTTAdNative = ttAdManager.createAdNative(context);
-        loadAd(context);
+        loadAd(activity);
     }
 
-    private void loadAd(Context context) {
+    private void loadAd(Activity activity) {
         //step4:创建广告请求参数AdSlot,具体参数含义参考文档
         AdSlot adSlot;
 
@@ -82,7 +82,7 @@ public class RewardVideoAdView implements PlatformView {
 //                    mttRewardVideoAd.showRewardVideoAd(RewardVideoActivity.this);
 
                     //展示广告，并传入广告展示的场景
-                    mttRewardVideoAd.showRewardVideoAd((Activity) context, TTAdConstant.RitScenes.CUSTOMIZE_SCENES, "scenes_test");
+                    mttRewardVideoAd.showRewardVideoAd(activity, TTAdConstant.RitScenes.CUSTOMIZE_SCENES, "scenes_test");
                     mttRewardVideoAd = null;
                 }
             }

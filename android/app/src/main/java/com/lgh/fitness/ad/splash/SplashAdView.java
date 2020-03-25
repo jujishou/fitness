@@ -1,4 +1,4 @@
-package com.lgh.fitness.ad;
+package com.lgh.fitness.ad.splash;
 
 
 import android.content.BroadcastReceiver;
@@ -17,6 +17,8 @@ import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.lgh.fitness.MainActivity;
+import com.lgh.fitness.ad.AdListener;
+import com.lgh.fitness.ad.TTAdManagerHolder;
 
 import java.util.Map;
 

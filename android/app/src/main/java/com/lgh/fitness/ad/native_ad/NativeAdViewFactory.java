@@ -1,25 +1,28 @@
-package com.lgh.fitness.ad;
+package com.lgh.fitness.ad.native_ad;
 
+import android.app.Activity;
 import android.content.Context;
 
-import java.util.Map;
+import com.lgh.fitness.ad.AdListener;
+import com.lgh.fitness.ad.express.ExpressAdView;
 
 import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.plugin.platform.PlatformView;
 import io.flutter.plugin.platform.PlatformViewFactory;
 
-public class RewardVideoAdViewFactory extends PlatformViewFactory {
+public class NativeAdViewFactory extends PlatformViewFactory {
     private final AdListener listener;
+    private Activity activity;
 
-    public RewardVideoAdViewFactory(AdListener listener) {
+    public NativeAdViewFactory(AdListener listener, Activity activity) {
         super(StandardMessageCodec.INSTANCE);
         this.listener = listener;
+        this.activity = activity;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public PlatformView create(Context context, int id, Object args) {
-        Map<String, Object> params = (Map<String, Object>) args;
-        return new RewardVideoAdView(context, listener, id, params);
+        return new NativeAdView(context, listener, activity);
     }
 }

@@ -19,14 +19,14 @@ public class MainActivity extends FlutterActivity implements AdListener {
     public void configureFlutterEngine(FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
         GeneratedPluginRegistrant.registerWith(flutterEngine);
-        SplashAdViewFlutterPlugin.registerWith(flutterEngine, this);
+        SplashAdViewFlutterPlugin.registerWith(flutterEngine, this, this);
 
         initBackTop(flutterEngine);
     }
 
     //注册返回到手机桌面事件
     private void initBackTop(FlutterEngine flutterEngine) {
-        new MethodChannel(flutterEngine.getDartExecutor(), "fitness.flutter.io/splash").setMethodCallHandler(
+        new MethodChannel(flutterEngine.getDartExecutor(), "fitness.flutter.io/ad").setMethodCallHandler(
                 (MethodCall methodCall, MethodChannel.Result result) -> {
                     this.methodCall = methodCall;
                     this.result = result;
@@ -43,7 +43,7 @@ public class MainActivity extends FlutterActivity implements AdListener {
     public void onAdFinished(String msg) {
         if (methodCall == null || result == null) return;
 
-        if (methodCall.method.equals("splash")) {
+        if (methodCall.method.equals("adFinish")) {
             result.success(true);
         }
     }
