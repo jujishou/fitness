@@ -63,7 +63,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: AndroidView(viewType: 'plugins.lgh.top/adview'),
+//      child: AndroidView(viewType: 'plugins.lgh.top/adview'),
+      child: AndroidView(viewType: 'plugins.lgh.top/reward_video'),
     );
 
     return WillPopScope(

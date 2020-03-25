@@ -1,17 +1,21 @@
 package com.lgh.fitness.ad;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.annotation.MainThread;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
+import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
+import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 
 import java.util.Map;
@@ -29,8 +33,9 @@ public class RewardVideoAdView implements PlatformView {
 
     //开屏广告加载超时时间,建议大于3000,这里为了冷启动第一次加载到广告并且展示,示例设置了3000ms
     private static final int AD_TIME_OUT = 3000;
-    private String mCodeId = "887310160";
+    private String mCodeId = "945107791";
     private AdListener listener;
+    private TTRewardVideoAd mttRewardVideoAd;
 
     RewardVideoAdView(Context context, AdListener listener, int id, Map<String, Object> params) {
 
@@ -38,122 +43,132 @@ public class RewardVideoAdView implements PlatformView {
         mTTAdNative = TTAdManagerHolder.get().createAdNative(context);
         this.listener = listener;
 
-        //在合适的时机申请权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题
-        //在开屏时候申请不太合适，因为该页面倒计时结束或者请求超时会跳转，在该页面申请权限，体验不好
-        // TTAdManagerHolder.getInstance(this).requestPermissionIfNecessary(this);
-
-        loadSplashAd();
+        TTAdManager ttAdManager = TTAdManagerHolder.get();
+        //step2:(可选，强烈建议在合适的时机调用):申请部分权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题。
+        TTAdManagerHolder.get().requestPermissionIfNecessary(context);
+        //step3:创建TTAdNative对象,用于调用广告请求接口
+        mTTAdNative = ttAdManager.createAdNative(context);
+        loadAd(context);
     }
 
-    private void loadSplashAd() {
-        //step3:创建开屏广告请求参数AdSlot,具体参数含义参考文档
-        AdSlot adSlot = new AdSlot.Builder()
+    private void loadAd(Context context) {
+        //step4:创建广告请求参数AdSlot,具体参数含义参考文档
+        AdSlot adSlot;
+
+        //模板广告需要设置期望个性化模板广告的大小,单位dp,代码位是否属于个性化模板广告，请在穿山甲平台查看
+        adSlot = new AdSlot.Builder()
                 .setCodeId(mCodeId)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(1080, 1920)
+                .setRewardName("金币") //奖励的名称
+                .setRewardAmount(3)  //奖励的数量
+                .setUserID("user123")//用户id,必传参数
+                .setMediaExtra("media_extra") //附加参数，可选
+                .setOrientation(TTAdConstant.VERTICAL) //必填参数，期望视频的播放方向：TTAdConstant.HORIZONTAL 或 TTAdConstant.VERTICAL
                 .build();
-
-        //step4:请求广告，调用开屏广告异步请求接口，对请求回调的广告作渲染处理
-        mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {
+        //step5:请求广告
+        mTTAdNative.loadRewardVideoAd(adSlot, new TTAdNative.RewardVideoAdListener() {
             @Override
-            @MainThread
             public void onError(int code, String message) {
-                Log.d(TAG, String.valueOf(message));
+                Log.e(TAG, "onError: " + code + ", " + String.valueOf(message));
             }
 
+            //视频广告加载后，视频资源缓存到本地的回调，在此回调后，播放本地视频，流畅不阻塞。
             @Override
-            @MainThread
-            public void onTimeout() {
-                Log.d(TAG, "开屏广告加载超时");
-                goFlutter("onTimeout");
+            public void onRewardVideoCached() {
+                Log.e(TAG, "onRewardVideoCached");
+                if (mttRewardVideoAd != null) {
+                    //step6:在获取到广告后展示,强烈建议在onRewardVideoCached回调后，展示广告，提升播放体验
+                    //该方法直接展示广告
+//                    mttRewardVideoAd.showRewardVideoAd(RewardVideoActivity.this);
+
+                    //展示广告，并传入广告展示的场景
+                    mttRewardVideoAd.showRewardVideoAd((Activity) context, TTAdConstant.RitScenes.CUSTOMIZE_SCENES, "scenes_test");
+                    mttRewardVideoAd = null;
+                }
             }
 
+            //视频广告的素材加载完毕，比如视频url等，在此回调后，可以播放在线视频，网络不好可能出现加载缓冲，影响体验。
             @Override
-            @MainThread
-            public void onSplashAdLoad(TTSplashAd ad) {
-                Log.d(TAG, "开屏广告请求成功");
-                if (ad == null) {
-                    return;
-                }
-                //获取SplashView
-                View view = ad.getSplashView();
-                if (view != null && mSplashContainer != null) {
-                    mSplashContainer.removeAllViews();
-                    //把SplashView 添加到ViewGroup中,注意开屏广告view：width >=70%屏幕宽；height >=50%屏幕高
-                    mSplashContainer.addView(view);
-                    //设置不开启开屏广告倒计时功能以及不显示跳过按钮,如果这么设置，您需要自定义倒计时逻辑
-                    //ad.setNotAllowSdkCountdown();
-                }
+            public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
+                Log.e(TAG, "onRewardVideoAdLoad");
 
-                //设置SplashView的交互监听器
-                ad.setSplashInteractionListener(new TTSplashAd.AdInteractionListener() {
+                mttRewardVideoAd = ad;
+                mttRewardVideoAd.setRewardAdInteractionListener(new TTRewardVideoAd.RewardAdInteractionListener() {
+
                     @Override
-                    public void onAdClicked(View view, int type) {
-                        Log.d(TAG, "onAdClicked");
+                    public void onAdShow() {
+                        Log.e(TAG, "onAdShow: ");
                     }
 
                     @Override
-                    public void onAdShow(View view, int type) {
-                        Log.d(TAG, "onAdShow");
+                    public void onAdVideoBarClick() {
+                        Log.e(TAG, "onAdVideoBarClick: ");
                     }
 
                     @Override
-                    public void onAdSkip() {
-                        Log.d(TAG, "onAdSkip");
-                        goFlutter("onAdSkip");
+                    public void onAdClose() {
+                        Log.e(TAG, "onAdClose: ");
+                    }
+
+                    //视频播放完成回调
+                    @Override
+                    public void onVideoComplete() {
+                        Log.e(TAG, "onVideoComplete: ");
+                        goFlutter("completed");
                     }
 
                     @Override
-                    public void onAdTimeOver() {
-                        Log.d(TAG, "onAdTimeOver");
-                        goFlutter("onAdTimeOver");
+                    public void onVideoError() {
+                        Log.e(TAG, "onVideoError: ");
+                    }
+
+                    //视频播放完成后，奖励验证回调，rewardVerify：是否有效，rewardAmount：奖励梳理，rewardName：奖励名称
+                    @Override
+                    public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+                        Log.e(TAG, "verify:" + rewardVerify + " amount:" + rewardAmount +
+                                " name:" + rewardName);
+                    }
+
+                    @Override
+                    public void onSkippedVideo() {
+                        Log.e(TAG, "onSkippedVideo: ");
+                        goFlutter("skipped");
                     }
                 });
-                if (ad.getInteractionType() == TTAdConstant.INTERACTION_TYPE_DOWNLOAD) {
-                    ad.setDownloadListener(new TTAppDownloadListener() {
-                        boolean hasShow = false;
+                mttRewardVideoAd.setDownloadListener(new TTAppDownloadListener() {
+                    @Override
+                    public void onIdle() {
+                        Log.e(TAG, "onIdle: ");
+                    }
 
-                        @Override
-                        public void onIdle() {
-                        }
+                    @Override
+                    public void onDownloadActive(long totalBytes, long currBytes, String fileName, String appName) {
+                        Log.e(TAG, "onDownloadActive==totalBytes=" + totalBytes + ",currBytes=" + currBytes + ",fileName=" + fileName + ",appName=" + appName);
 
-                        @Override
-                        public void onDownloadActive(long totalBytes, long currBytes, String fileName, String appName) {
-                            if (!hasShow) {
-                                Log.d(TAG, "下载中...");
+                    }
 
-                                hasShow = true;
-                            }
-                        }
+                    @Override
+                    public void onDownloadPaused(long totalBytes, long currBytes, String fileName, String appName) {
+                        Log.e(TAG, "onDownloadPaused===totalBytes=" + totalBytes + ",currBytes=" + currBytes + ",fileName=" + fileName + ",appName=" + appName);
+                    }
 
-                        @Override
-                        public void onDownloadPaused(long totalBytes, long currBytes, String fileName, String appName) {
-                            Log.d(TAG, "下载暂停...");
+                    @Override
+                    public void onDownloadFailed(long totalBytes, long currBytes, String fileName, String appName) {
+                        Log.e(TAG, "onDownloadFailed==totalBytes=" + totalBytes + ",currBytes=" + currBytes + ",fileName=" + fileName + ",appName=" + appName);
+                    }
 
-                        }
+                    @Override
+                    public void onDownloadFinished(long totalBytes, String fileName, String appName) {
+                        Log.e(TAG, "onDownloadFinished==totalBytes=" + totalBytes + ",fileName=" + fileName + ",appName=" + appName);
+                    }
 
-                        @Override
-                        public void onDownloadFailed(long totalBytes, long currBytes, String fileName, String appName) {
-                            Log.d(TAG, "下载失败...");
-
-                        }
-
-                        @Override
-                        public void onDownloadFinished(long totalBytes, String fileName, String appName) {
-                            Log.d(TAG, "下载完成...");
-
-                        }
-
-                        @Override
-                        public void onInstalled(String fileName, String appName) {
-                            Log.d(TAG, "安装完成...");
-
-                        }
-                    });
-                }
+                    @Override
+                    public void onInstalled(String fileName, String appName) {
+                        Log.e(TAG, "onInstalled==" + ",fileName=" + fileName + ",appName=" + appName);
+                    }
+                });
             }
-        }, AD_TIME_OUT);
-
+        });
     }
 
     private void goFlutter(String msg) {

@@ -19,5 +19,8 @@ public class SplashAdViewFlutterPlugin {
         registrar.platformViewRegistry().registerViewFactory("plugins.lgh.top/adview",
                 new SplashAdViewFactory(listener));
 
+        registrar.platformViewRegistry().registerViewFactory("plugins.lgh.top/reward_video",
+                new SplashAdViewFactory(listener));
+
     }
 }
